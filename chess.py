@@ -1,17 +1,15 @@
-from pettingzoo.classic import connect_four_v3
+from pettingzoo.atari import mario_bros_v3
+import time
 
-env = connect_four_v3.env(render_mode="human")
-env.reset(seed=42)
+rom_path = '.'
 
-for agent in env.agent_iter():
-    observation, reward, termination, truncation, info = env.last()
+env = mario_bros_v3.parallel_env(auto_rom_install_path=rom_path, render_mode='human')
+observations, infos = env.reset()
 
-    if termination or truncation:
-        action = None
-    else:
-        mask = observation["action_mask"]
-        # this is where you would insert your policy
-        action = env.action_space(agent).sample(mask)
+while env.agents:
+    time.sleep(0.01)
+    # this is where you would insert your policy
+    actions = {agent: env.action_space(agent).sample() for agent in env.agents}
 
-    env.step(action)
+    observations, rewards, terminations, truncations, infos = env.step(actions)
 env.close()
