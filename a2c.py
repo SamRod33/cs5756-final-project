@@ -37,6 +37,7 @@ class PolicyGradient:
         state_tensor = torch.tensor(state).to(self.device)
         action_probs = self.policy_net(state_tensor)
         action_categorical = torch.distributions.categorical.Categorical(action_probs)
+        # TODO
         action = action_categorical.sample().item()
         return action
 
@@ -144,7 +145,41 @@ class PolicyGradient:
                 rewards += reward
             total_rewards.append(rewards)
         return np.mean(total_rewards)
+    
+    
+class PolicyNet(nn.Module):
+    def __init__(self, state_dim: int, action_dim: int, hidden_dim: int):
+        """Policy network for the REINFORCE algorithm.
 
+        Args:
+            state_dim (int): Dimension of the state space.
+            action_dim (int): Dimension of the action space.
+            hidden_dim (int): Dimension of the hidden layers.
+        """
+        super(PolicyNet, self).__init__()
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        self.fc1 = nn.Linear(in_features=state_dim, out_features=hidden_dim)
+        self.fc2 = nn.Linear(in_features=hidden_dim, out_features=action_dim)
+        self.relu = nn.ReLU()
+        self.softmax = nn.Softmax()
+
+    def forward(self, state: torch.Tensor):
+        """Forward pass of the policy network.
+
+        Args:
+            state (torch.Tensor): State of the environment.
+
+        Returns:
+            x (torch.Tensor): Probabilities of the actions.
+        """
+        z1 = self.relu(self.fc1(state))
+        z2 = self.fc2(z1)
+        z3 = self.softmax(z2)
+        return z3
+
+
+# TODO
 class ValueNet(nn.Module):
     def __init__(self, state_dim: int, hidden_dim: int):
         """Value network for the Actor-Critic algorithm.
@@ -238,7 +273,6 @@ class ActorCriticPolicyGradient(PolicyGradient):
             value_optimizer (torch.optim): Optimizer for value network
             gamma (float): Discount factor
         """
-        # TODO: Compute the policy and value loss for each episode
         policy_losses = []
         value_losses = []
         for episode in episodes:
