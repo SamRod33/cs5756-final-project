@@ -1,6 +1,7 @@
 from pettingzoo.atari import mario_bros_v3
 import time
-
+import numpy as np
+from supersuit import color_reduction_v0, frame_stack_v1, dtype_v0, resize_v1
 
 SEED = 695
 
@@ -12,6 +13,7 @@ class MarioEnv:
     def __init__(self, seed=SEED, render=False) -> None:
         rom_path = '.'
         self.env = mario_bros_v3.parallel_env(auto_rom_install_path=rom_path, render_mode=('human' if render else None))
+        self.env = dtype_v0(resize_v1(color_reduction_v0(self.env, mode='R'), 105, 80, linear_interp=False), np.float32)
         self.reset(seed)
         self.agents = self.env.agents
         self.num_agents = self.env.num_agents
@@ -43,10 +45,19 @@ class MarioEnv:
         return self.env.action_space(agent_id)
     
     def reseed(self, seed=SEED):
+        self.reset(seed)
         for agent_id in self.agents:
             self.observation_space(agent_id).seed(seed)
             self.action_space(agent_id).seed(seed)
-        
+            
+    def obs_dim(self, agent_id):
+        return np.prod(self.observation_space(agent_id).shape)
+    
+    def global_obs_dim(self):
+        dim = 0
+        for agent in self.env.agents:
+            dim += self.obs_dim(agent)
+        return dim
     
         
         
@@ -59,6 +70,7 @@ if __name__ == '__main__':
         time.sleep(0.01)
         # this is where you would insert your policy
         actions = {agent: env.action_space(agent).sample() for agent in env.agents}
+        
 
         observations, rewards, terminations, truncations, infos = env.step(actions)
     env.close()
