@@ -37,7 +37,7 @@ class PolicyGradient:
         state_tensor = torch.tensor(state).to(self.device)
         action_probs = self.policy_net(state_tensor)
         action_categorical = torch.distributions.categorical.Categorical(action_probs)
-        # TODO
+        # TODO: make it deterministic
         action = action_categorical.sample().item()
         return action
 
@@ -87,44 +87,47 @@ class PolicyGradient:
         optimizer.step()
 
 
-    def run_episode(self):
-        """
-        Run an episode of the environment and return the episode
+    # def run_episode(self):
+    #     """
+    #     Run an episode of the environment and return the episode
 
-        Returns:
-            episode (list): List of tuples (state, action, reward)
-        """
-        self.env.seed(self.seed)
-        self.env.action_space.seed(self.seed)
-        self.env.observation_space.seed(self.seed)
-        state = self.env.reset()
-        episode = []
-        done = False
-        while not done:
-            action = self.select_action(state)
-            next_state, reward, done, info = self.env.step(action)
-            episode.append((state, action, reward))
-            state = next_state
-        return episode
+    #     Returns:
+    #         episode (list): List of tuples (state, action, reward)
+    #     """
+    #     # TODO: will be moved to maddpg
+    #     self.env.seed(self.seed)
+    #     self.env.action_space.seed(self.seed)
+    #     self.env.observation_space.seed(self.seed)
+    #     state = self.env.reset()
+    #     episode = []
+    #     done = False
+    #     while not done:
+    #         action = self.select_action(state)
+    #         next_state, reward, done, info = self.env.step(action)
+    #         episode.append((state, action, reward))
+    #         state = next_state
+    #     return episode
+    
+    # we do not plan on using PolicyGradients directly, only as a superclass
+    # def train(self, num_iterations, batch_size, gamma, lr):
+    #     """Train the policy network using the REINFORCE algorithm
 
-    def train(self, num_iterations, batch_size, gamma, lr):
-        """Train the policy network using the REINFORCE algorithm
-
-        Args:
-            num_iterations (int): Number of iterations to train the policy network
-            batch_size (int): Number of episodes per batch
-            gamma (float): Discount factor
-            lr (float): Learning rate
-        """
-        avg_rewards = []
-        self.policy_net.train()
-        optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=lr)
-        for iter in tqdm(range(num_iterations)):
-            episodes = [self.run_episode() for _ in range(batch_size)]
-            self.update_policy(episodes, optimizer, gamma)
-            if iter % 10 == 0:
-                avg_rewards.append(self.evaluate(10))
-        return avg_rewards
+    #     Args:
+    #         num_iterations (int): Number of iterations to train the policy network
+    #         batch_size (int): Number of episodes per batch
+    #         gamma (float): Discount factor
+    #         lr (float): Learning rate
+    #     """
+    #     # TODO: take out episodes and ask as param and do not iterate here 
+    #     avg_rewards = []
+    #     self.policy_net.train()
+    #     optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=lr)
+    #     for iter in tqdm(range(num_iterations)):
+    #         episodes = [self.run_episode() for _ in range(batch_size)]
+    #         self.update_policy(episodes, optimizer, gamma)
+    #         if iter % 10 == 0:
+    #             avg_rewards.append(self.evaluate(10))
+    #     return avg_rewards
 
 
     def evaluate(self, num_episodes = 100):
@@ -179,7 +182,7 @@ class PolicyNet(nn.Module):
         return z3
 
 
-# TODO
+# TODO: make critic network global for all agents
 class ValueNet(nn.Module):
     def __init__(self, state_dim: int, hidden_dim: int):
         """Value network for the Actor-Critic algorithm.
@@ -226,6 +229,7 @@ class ActorCriticPolicyGradient(PolicyGradient):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.policy_net = policy_net.to(self.device)
         self.value_net = value_net.to(self.device)
+        # TODO: fix seeding
         self.seed = seed
         self.env.seed(self.seed)
         self.env.action_space.seed(self.seed)
@@ -300,6 +304,7 @@ class ActorCriticPolicyGradient(PolicyGradient):
             gamma (float): Discount factor
             lr (float): Learning rate
         """
+        # TODO: take out episodes and ask as param and do not iterate here
         avg_rewards = []
         self.policy_net.train()
         self.value_net.train()

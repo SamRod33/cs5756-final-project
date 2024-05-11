@@ -1,15 +1,17 @@
 from pettingzoo.atari import mario_bros_v3
 import time
 
-def mario_env():
-    return MarioEnv()
 
 SEED = 695
 
+def mario_env(seed=SEED, render=False):
+    return MarioEnv(seed, render)
+
+
 class MarioEnv:
-    def __init__(self, seed=SEED) -> None:
+    def __init__(self, seed=SEED, render=False) -> None:
         rom_path = '.'
-        self.env = mario_bros_v3.parallel_env(auto_rom_install_path=rom_path, render_mode='human')
+        self.env = mario_bros_v3.parallel_env(auto_rom_install_path=rom_path, render_mode=('human' if render else None))
         self.reset(seed)
         self.agents = self.env.agents
         self.num_agents = self.env.num_agents
@@ -17,7 +19,8 @@ class MarioEnv:
         self.max_num_agents = self.env.max_num_agents
         self.observation_spaces = self.env.observation_spaces
         self.action_spaces = self.env.action_spaces
-        
+        self.reseed(seed)
+    
     def step(self, actions):
         return self.env.step(actions)
     
@@ -49,7 +52,7 @@ class MarioEnv:
         
     
 if __name__ == '__main__':
-    env = mario_env()
+    env = mario_env(render=True)
     observations, infos = env.reset()
 
     while env.agents:
