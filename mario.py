@@ -2,6 +2,7 @@ from pettingzoo.atari import mario_bros_v3
 import time
 import numpy as np
 from supersuit import color_reduction_v0, frame_stack_v1, dtype_v0, resize_v1
+from agent import Agent
 
 SEED = 695
 
@@ -59,13 +60,10 @@ class MarioEnv:
             dim += self.obs_dim(agent)
         return dim
     
-        
-        
-    
-if __name__ == '__main__':
+def untrained_sim():
     env = mario_env(render=True)
     observations, infos = env.reset()
-
+    
     while env.agents:
         time.sleep(0.01)
         # this is where you would insert your policy
@@ -74,3 +72,20 @@ if __name__ == '__main__':
 
         observations, rewards, terminations, truncations, infos = env.step(actions)
     env.close()
+    
+def trained_sim():
+    env = mario_env(render=True)
+    observations, infos = env.reset()
+    agent_nets = {agent_id : Agent(env, agent_id, SEED, lr=0.01) for agent_id in env.agents}
+    for agent_id in env.agents:
+        agent_nets[agent_id].load(f'{agent_id}-policy.pt')
+
+    while env.agents:
+        time.sleep(0.01)
+        actions = {agent: agent_nets[agent].select_action(observations[agent].flatten()) for agent in env.agents}
+        observations, rewards, terminations, truncations, infos = env.step(actions)
+    env.close()
+        
+    
+if __name__ == '__main__':
+    trained_sim()

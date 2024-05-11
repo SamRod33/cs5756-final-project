@@ -36,7 +36,7 @@ class PolicyGradient:
         """
         state_tensor = torch.tensor(state).to(self.device)
         action_probs = self.policy_net(state_tensor)
-        action_categorical = torch.distributions.categorical.Categorical(action_probs)
+        # action_categorical = torch.distributions.categorical.Categorical(action_probs)
         # TODO: make it deterministic
         # action = action_categorical.sample().item()
         action = torch.argmax(action_probs).item()

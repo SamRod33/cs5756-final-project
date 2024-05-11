@@ -1,7 +1,6 @@
 from agent import Agent
 import numpy as np
 from tqdm import tqdm
-import torch
 
 class MADDPG:
     """
@@ -81,6 +80,12 @@ class MADDPG:
                 agent_net.train(episodes, self.gamma)
             if iter % 10 == 0:
                 avg_rewards.append(self.evaluate(10))
+                # Open a file in write mode
+                with open("output.txt", "w") as file:
+                    # Iterate over the list
+                    for item in avg_rewards:
+                        # Write each item to the file
+                        file.write(f"{item}\n")
         return avg_rewards
     
     def save_agents(self):
