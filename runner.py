@@ -6,8 +6,8 @@ from maddpg import MADDPG
 import mario
 
 seed = mario.SEED
-num_iterations = 11
-batch_size = 1
+num_iterations = 200
+batch_size = 10
 gamma = 0.99
 lr = 0.01
 

@@ -80,7 +80,7 @@ class MADDPG:
             for agent, agent_net in self.agent_nets.items():
                 agent_net.train(episodes, self.gamma)
             if iter % 10 == 0:
-                avg_rewards.append(self.evaluate(1))
+                avg_rewards.append(self.evaluate(10))
         return avg_rewards
     
     def save_agents(self):
